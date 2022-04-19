@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  postgresql:
+    build:
+      context: ./db-migration
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRESQL_PASSWORD=mypass
+      - POSTGRESQL_DATABASE=atm
+      - DB_URL=postgres://postgres:mypass@localhost:5432/atm?sslmode=disable
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "--dbname=atm", "--username=postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
