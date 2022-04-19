@@ -1,6 +1,6 @@
 # ATM Service Rest API with Postgres and JWT Example
 
-### Build and Run
+### Build, Run and Test
 
 - Clone the project and go to the project root directory `atm-service-golang`
 - Run docker compose command to start Postgres DB:
@@ -10,6 +10,10 @@
 - Go to the service directory `atm-service-golang/service` and run backend server:
     ```
     go run ./cmd
+    ```
+- Tests implemented partially for server handlers using go-mock. To run all tests:
+    ```
+    go test ./server
     ```
 ### API Endpoints
 #### Service expose five endpoints
