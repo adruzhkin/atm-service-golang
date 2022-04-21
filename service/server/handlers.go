@@ -18,6 +18,7 @@ func (s *Server) CheckHealth() http.HandlerFunc {
 		err := s.DB.Ping()
 		if err != nil {
 			utils.RespondWithStatus(w, http.StatusServiceUnavailable, "service unavailable")
+			return
 		}
 
 		utils.RespondWithStatus(w, http.StatusOK, "service is up and running")
