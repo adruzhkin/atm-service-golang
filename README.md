@@ -43,10 +43,6 @@ TOKEN=eyJhbGciOiJIUzI1NiIsI...
 ```bash
 curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"pin_number": "1234", "account_number": "100000000099"}' http://localhost:5000/api/v1/auth/login
 ```
-If jq tool is installed, we can save token to env variable:
-```bash
-TOKEN=$(curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"pin_number": "1234", "account_number": "100000000099"}' http://localhost:5000/api/v1/auth/login | jq -r '.token')
-```
 Response:
 ```json
 {"jwt":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXMiOjEsImFjYyI6MSwiZXhwIjoxNjUwMzUxNDE4fQ._CNJIng6uwVgYoZjjVgddEHnSW4ZyI1Md-CHu4H5IK8","customer":{"id":1,"first_name":"Natasha","last_name":"Romanov","email":"natasha@gmail.com","account":{"id":1,"number":"100000000099"}}}
