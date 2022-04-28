@@ -40,7 +40,7 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 			FirstName: cusReq.FirstName,
 			LastName:  cusReq.LastName,
 			Email:     cusReq.Email,
-			PINHash:   utils.GeneratePINHash(cusReq.PINNumber),
+			PINHash:   models.GeneratePINHash(cusReq.PINNumber),
 			Account:   &models.Account{Number: cusReq.AccountNumber},
 		}
 		err = s.DB.CreateCustomer(&cus)

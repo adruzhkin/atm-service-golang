@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/adruzhkin/atm-service-golang/service/models"
-	"github.com/adruzhkin/atm-service-golang/service/utils"
 )
 
 func (p *Postgres) GetCustomerByAccountID(id int) (*models.Customer, error) {
@@ -42,7 +41,7 @@ func (p *Postgres) GetCustomerByCredentials(crd *models.CustomerCredentials) (*m
 		return &models.Customer{}, errors.New("invalid login credentials")
 	}
 
-	crdPINHash := utils.GeneratePINHash(crd.PINNumber)
+	crdPINHash := models.GeneratePINHash(crd.PINNumber)
 	if cus.PINHash != crdPINHash {
 		return &models.Customer{}, errors.New("invalid login credentials")
 	}
