@@ -1,5 +1,10 @@
 package models
 
+import (
+	"crypto/sha256"
+	"encoding/hex"
+)
+
 type Customer struct {
 	ID        int      `json:"id"`
 	FirstName string   `json:"first_name"`
@@ -8,6 +13,11 @@ type Customer struct {
 	PINHash   string   `json:"pin_hash,omitempty"`
 	AccountID int      `json:"account_id,omitempty"`
 	Account   *Account `json:"account"`
+}
+
+func GeneratePINHash(pin string) string {
+	hash := sha256.Sum256([]byte(pin))
+	return hex.EncodeToString(hash[:])
 }
 
 type CustomerRequestBody struct {
