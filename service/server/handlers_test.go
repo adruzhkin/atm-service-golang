@@ -100,8 +100,8 @@ func TestLoginCustomer(t *testing.T) {
 	defer ctrl.Finish()
 
 	credentials := models.CustomerCredentials{
-		PINNumber:     "1234",
-		AccountNumber: "100000000099",
+		PINNumber: "1234",
+		Email:     "natasha@gmail.com",
 	}
 
 	acc := models.Account{
@@ -128,7 +128,7 @@ func TestLoginCustomer(t *testing.T) {
 	server.DB = repo
 	server.JWT = jwt
 
-	reqBody := `{"pin_number": "1234", "account_number": "100000000099"}`
+	reqBody := `{"pin_number": "1234", "email": "natasha@gmail.com"}`
 	reader := strings.NewReader(reqBody)
 	req := httptest.NewRequest(http.MethodPost, "/auth/login", reader)
 	rr := httptest.NewRecorder()
