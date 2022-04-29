@@ -41,7 +41,7 @@ TOKEN=eyJhbGciOiJIUzI1NiIsI...
 
 3. Request to login existing user:
 ```bash
-curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"pin_number": "1234", "account_number": "100000000099"}' http://localhost:5000/api/v1/auth/login
+curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"pin_number": "1234", "email": "natasha@gmail.com"}' http://localhost:5000/api/v1/auth/login
 ```
 Response:
 ```json
