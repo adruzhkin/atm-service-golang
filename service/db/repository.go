@@ -7,12 +7,11 @@ type Repo interface {
 	Close() error
 	Ping() error
 
-	GetCustomerByAccountID(id int) (*models.Customer, error)
+	GetCustomerByEmail(email string) (*models.Customer, error)
 	GetCustomerByCredentials(crd *models.CustomerCredentials) (*models.Customer, error)
 	CreateCustomer(c *models.Customer) error
 
 	GetAccountByID(id int) (*models.Account, error)
-	GetAccountByNumber(n string) (*models.Account, error)
 
 	GetTransactionsByAccountID(id int) ([]models.Transaction, error)
 	GetTransactionsBalanceByAccountID(id int) (int, error)

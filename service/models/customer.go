@@ -29,8 +29,8 @@ type CustomerRequestBody struct {
 }
 
 type CustomerCredentials struct {
-	PINNumber     string `json:"pin_number"`
-	AccountNumber string `json:"account_number"`
+	PINNumber string `json:"pin_number"`
+	Email     string `json:"email"`
 }
 
 type CustomerVerified struct {

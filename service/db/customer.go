@@ -7,17 +7,17 @@ import (
 	"github.com/adruzhkin/atm-service-golang/service/models"
 )
 
-func (p *Postgres) GetCustomerByAccountID(id int) (*models.Customer, error) {
+func (p *Postgres) GetCustomerByEmail(email string) (*models.Customer, error) {
 	var cus models.Customer
 	err := p.db.
-		QueryRow("SELECT id, first_name, last_name, email, pin_hash, account_id FROM customers WHERE account_id=$1", id).
+		QueryRow("SELECT id, first_name, last_name, email, pin_hash, account_id FROM customers WHERE email=$1", email).
 		Scan(&cus.ID, &cus.FirstName, &cus.LastName, &cus.Email, &cus.PINHash, &cus.AccountID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			return &models.Customer{}, err
 		default:
-			return &models.Customer{}, errors.New("failed to query existing customer by account id")
+			return &models.Customer{}, errors.New("failed to query existing customer by email address")
 		}
 	}
 
@@ -31,12 +31,7 @@ func (p *Postgres) GetCustomerByAccountID(id int) (*models.Customer, error) {
 }
 
 func (p *Postgres) GetCustomerByCredentials(crd *models.CustomerCredentials) (*models.Customer, error) {
-	acc, err := p.GetAccountByNumber(crd.AccountNumber)
-	if err != nil {
-		return &models.Customer{}, errors.New("invalid login credentials")
-	}
-
-	cus, err := p.GetCustomerByAccountID(acc.ID)
+	cus, err := p.GetCustomerByEmail(crd.Email)
 	if err != nil {
 		return &models.Customer{}, errors.New("invalid login credentials")
 	}
