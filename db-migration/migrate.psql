@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS customers
     email      VARCHAR(25),
     pin_hash   CHAR(64),
     account_id INT,
+    UNIQUE (email),
     PRIMARY KEY (id),
     FOREIGN KEY (account_id) REFERENCES accounts (id)
 );
