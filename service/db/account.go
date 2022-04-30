@@ -20,3 +20,17 @@ func (p *Postgres) GetAccountByID(id int) (*models.Account, error) {
 	}
 	return &acc, nil
 }
+
+func (p *Postgres) GetAccountLastCreated() (*models.Account, error) {
+	var acc models.Account
+	err := p.db.QueryRow("SELECT id, number FROM accounts ORDER BY number DESC LIMIT 1").Scan(&acc.ID, &acc.Number)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return &models.Account{}, err
+		default:
+			return &models.Account{}, errors.New("failed to query existing account by id")
+		}
+	}
+	return &acc, nil
+}
