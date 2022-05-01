@@ -49,7 +49,7 @@ Response:
 ```
 If jq tool is installed, you can save token to env variable:
 ```bash
-TOKEN=$(curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"pin_number": "1234", "account_number": "100000000099"}' http://localhost:5000/api/v1/auth/login | jq -r '.jwt')
+TOKEN=$(curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"pin_number": "1234", "email": "natasha@gmail.com"}' http://localhost:5000/api/v1/auth/login | jq -r '.jwt')
 ```
 If token has expired, you can login one more time to refresh it.
 
