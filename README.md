@@ -3,6 +3,8 @@
 ### Build, Run and Test
 
 - Clone the project and go to the project root directory `atm-service-golang`
+- You can create your own `.env` file with required variables or use `.env_sample`
+- If you use `.env_sample`, make sure to rename it to `.env` before you run docker compose
 - Run docker compose command to start backend server and Postgres DB:
     ```bash
     docker-compose up --build
