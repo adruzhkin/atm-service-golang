@@ -26,11 +26,11 @@ Response:
 
 2. Request to signup new customer:
 ```bash
-curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "pin_number": "1234", "account_number": "100000000099"}' http://localhost:5000/api/v1/auth/signup
+curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "pin_number": "1234"}' http://localhost:5000/api/v1/auth/signup
 ```
 Response:
 ```json
-{"jwt":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXMiOjEsImFjYyI6MSwiZXhwIjoxNjUwMzUwMjEyfQ.gUBuS-j7VoDp9CdSc_F3f2VfhTXneNKS4WkPHE-f0ow","customer":{"id":1,"first_name":"Natasha","last_name":"Romanov","email":"natasha@gmail.com","account":{"id":1,"number":"100000000099"}}}
+{"jwt":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXMiOjEsImFjYyI6MSwiZXhwIjoxNjUwMzUwMjEyfQ.gUBuS-j7VoDp9CdSc_F3f2VfhTXneNKS4WkPHE-f0ow","customer":{"id":1,"first_name":"Natasha","last_name":"Romanov","email":"natasha@gmail.com","account":{"id":1,"number":"000000000001"}}}
 ```
 It returns JWT token that is valid for 2 minutes for testing purposes.
 It is recommended to copy the token to env variable:
@@ -45,7 +45,7 @@ curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: applicat
 ```
 Response:
 ```json
-{"jwt":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXMiOjEsImFjYyI6MSwiZXhwIjoxNjUwMzUxNDE4fQ._CNJIng6uwVgYoZjjVgddEHnSW4ZyI1Md-CHu4H5IK8","customer":{"id":1,"first_name":"Natasha","last_name":"Romanov","email":"natasha@gmail.com","account":{"id":1,"number":"100000000099"}}}
+{"jwt":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXMiOjEsImFjYyI6MSwiZXhwIjoxNjUwMzUxNDE4fQ._CNJIng6uwVgYoZjjVgddEHnSW4ZyI1Md-CHu4H5IK8","customer":{"id":1,"first_name":"Natasha","last_name":"Romanov","email":"natasha@gmail.com","account":{"id":1,"number":"000000000001"}}}
 ```
 If jq tool is installed, you can save token to env variable:
 ```bash
@@ -61,7 +61,7 @@ curl -w "\n" -H 'Accept: application/json' -H "Authorization: Bearer ${TOKEN}" h
 ```
 Response:
 ```json
-{"id":1,"number":"100000000099","balance":"0.00"}
+{"id":1,"number":"000000000001","balance":"0.00"}
 ```
 
 <br>
