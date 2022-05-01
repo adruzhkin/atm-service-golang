@@ -13,6 +13,10 @@ type Account struct {
 }
 
 func GenerateAccountNo(previousAccNo string) string {
+	if previousAccNo == "" {
+		return "000000000001"
+	}
+
 	var pointer int
 	for i, v := range previousAccNo {
 		if v == '0' {

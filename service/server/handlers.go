@@ -35,13 +35,26 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 			return
 		}
 
+		// Generate new account number
+		lastAcc, err := s.DB.GetAccountLastCreated()
+		if err != nil {
+			switch err {
+			case sql.ErrNoRows:
+				break
+			default:
+				utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+		newAccNo := models.GenerateAccountNo(lastAcc.Number)
+
 		// Save in db.
 		cus := models.Customer{
 			FirstName: cusReq.FirstName,
 			LastName:  cusReq.LastName,
 			Email:     cusReq.Email,
 			PINHash:   models.GeneratePINHash(cusReq.PINNumber),
-			Account:   &models.Account{Number: cusReq.AccountNumber},
+			Account:   &models.Account{Number: newAccNo},
 		}
 		err = s.DB.CreateCustomer(&cus)
 		if err != nil {
@@ -52,6 +65,7 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 		token, err := s.JWT.Generate(cus.ID, cus.AccountID)
 		if err != nil {
 			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
 		}
 
 		cus.OmitValues()

@@ -21,11 +21,10 @@ func GeneratePINHash(pin string) string {
 }
 
 type CustomerRequestBody struct {
-	FirstName     string `json:"first_name"`
-	LastName      string `json:"last_name"`
-	Email         string `json:"email"`
-	PINNumber     string `json:"pin_number"`
-	AccountNumber string `json:"account_number"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	PINNumber string `json:"pin_number"`
 }
 
 type CustomerCredentials struct {
