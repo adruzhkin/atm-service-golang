@@ -6,9 +6,9 @@ services:
       dockerfile: Dockerfile
     container_name: atm_db
     environment:
-      - POSTGRESQL_PASSWORD=mypass
-      - POSTGRESQL_DATABASE=atm
-      - DB_URL=postgres://postgres:mypass@localhost:5432/atm?sslmode=disable
+      - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE}
+      - DB_URL=${DB_URL}
     ports:
       - "5432:5432"
     healthcheck:
@@ -23,12 +23,12 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - DB_HOST=postgresql
-      - DB_PORT=5432
-      - DB_NAME=atm
-      - DB_USER=postgres
-      - DB_PASS=mypass
-      - JWT_SECRET=mysecret
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - postgresql
     links:
