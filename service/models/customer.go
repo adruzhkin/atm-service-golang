@@ -1,8 +1,7 @@
 package models
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Customer struct {
@@ -15,9 +14,16 @@ type Customer struct {
 	Account   *Account `json:"account"`
 }
 
-func GeneratePINHash(pin string) string {
-	hash := sha256.Sum256([]byte(pin))
-	return hex.EncodeToString(hash[:])
+func GeneratePINHash(pin string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(pin), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
+func ComparePINHash(hash, pin string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(pin)) == nil
 }
 
 type CustomerRequestBody struct {

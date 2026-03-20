@@ -48,12 +48,19 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 		}
 		newAccNo := models.GenerateAccountNo(lastAcc.Number)
 
+		// Hash PIN.
+		pinHash, err := models.GeneratePINHash(cusReq.PINNumber)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "failed to hash pin")
+			return
+		}
+
 		// Save in db.
 		cus := models.Customer{
 			FirstName: cusReq.FirstName,
 			LastName:  cusReq.LastName,
 			Email:     cusReq.Email,
-			PINHash:   models.GeneratePINHash(cusReq.PINNumber),
+			PINHash:   pinHash,
 			Account:   &models.Account{Number: newAccNo},
 		}
 		err = s.DB.CreateCustomer(&cus)

@@ -36,8 +36,7 @@ func (p *Postgres) GetCustomerByCredentials(crd *models.CustomerCredentials) (*m
 		return &models.Customer{}, errors.New("invalid login credentials")
 	}
 
-	crdPINHash := models.GeneratePINHash(crd.PINNumber)
-	if cus.PINHash != crdPINHash {
+	if !models.ComparePINHash(cus.PINHash, crd.PINNumber) {
 		return &models.Customer{}, errors.New("invalid login credentials")
 	}
 

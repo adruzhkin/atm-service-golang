@@ -42,18 +42,6 @@ func TestSignupCustomer(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	accBefore := models.Account{
-		Number: "100000000099",
-	}
-
-	cusBefore := models.Customer{
-		FirstName: "Natasha",
-		LastName:  "Romanov",
-		Email:     "natasha@gmail.com",
-		PINHash:   "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
-		Account:   &accBefore,
-	}
-
 	accAfter := models.Account{
 		ID:     0,
 		Number: "100000000099",
@@ -64,7 +52,6 @@ func TestSignupCustomer(t *testing.T) {
 		FirstName: "Natasha",
 		LastName:  "Romanov",
 		Email:     "natasha@gmail.com",
-		PINHash:   "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
 		Account:   &accAfter,
 	}
 
@@ -72,7 +59,14 @@ func TestSignupCustomer(t *testing.T) {
 
 	repo := mocks.NewMockRepo(ctrl)
 	repo.EXPECT().GetAccountLastCreated().Return(&lastAcc, nil)
-	repo.EXPECT().CreateCustomer(&cusBefore).SetArg(0, cusAfter).Return(nil)
+	repo.EXPECT().CreateCustomer(gomock.Any()).DoAndReturn(func(cus *models.Customer) error {
+		assert.Equal(t, "Natasha", cus.FirstName)
+		assert.Equal(t, "Romanov", cus.LastName)
+		assert.Equal(t, "natasha@gmail.com", cus.Email)
+		assert.NotEmpty(t, cus.PINHash)
+		*cus = cusAfter
+		return nil
+	})
 
 	jwt := mocks.NewMockJWT(ctrl)
 	jwt.EXPECT().Generate(7, 0).Return("token", nil)
@@ -116,7 +110,6 @@ func TestLoginCustomer(t *testing.T) {
 		FirstName: "Natasha",
 		LastName:  "Romanov",
 		Email:     "natasha@gmail.com",
-		PINHash:   "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
 		Account:   &acc,
 	}
 

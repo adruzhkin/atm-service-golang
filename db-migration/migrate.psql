@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS customers
     first_name VARCHAR(25),
     last_name  VARCHAR(25),
     email      VARCHAR(25),
-    pin_hash   CHAR(64),
+    pin_hash   VARCHAR(60),
     account_id INT,
     UNIQUE (email),
     PRIMARY KEY (id),
