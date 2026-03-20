@@ -1,4 +1,4 @@
-FROM golang:1.17
+FROM golang:1.26.1
 EXPOSE 5000
 
 RUN mkdir /app

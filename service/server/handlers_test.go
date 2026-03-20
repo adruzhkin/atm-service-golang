@@ -9,7 +9,7 @@ import (
 
 	"github.com/adruzhkin/atm-service-golang/service/mocks"
 	"github.com/adruzhkin/atm-service-golang/service/models"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -68,7 +68,10 @@ func TestSignupCustomer(t *testing.T) {
 		Account:   &accAfter,
 	}
 
+	lastAcc := models.Account{Number: "100000000098"}
+
 	repo := mocks.NewMockRepo(ctrl)
+	repo.EXPECT().GetAccountLastCreated().Return(&lastAcc, nil)
 	repo.EXPECT().CreateCustomer(&cusBefore).SetArg(0, cusAfter).Return(nil)
 
 	jwt := mocks.NewMockJWT(ctrl)
