@@ -82,6 +82,20 @@ func (mr *MockRepoMockRecorder) CreateTransaction(tx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockRepo)(nil).CreateTransaction), tx)
 }
 
+// CreateTransactionWithBalanceCheck mocks base method.
+func (m *MockRepo) CreateTransactionWithBalanceCheck(tx *models.Transaction) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTransactionWithBalanceCheck", tx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateTransactionWithBalanceCheck indicates an expected call of CreateTransactionWithBalanceCheck.
+func (mr *MockRepoMockRecorder) CreateTransactionWithBalanceCheck(tx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransactionWithBalanceCheck", reflect.TypeOf((*MockRepo)(nil).CreateTransactionWithBalanceCheck), tx)
+}
+
 // GetAccountByID mocks base method.
 func (m *MockRepo) GetAccountByID(id int) (*models.Account, error) {
 	m.ctrl.T.Helper()
@@ -95,21 +109,6 @@ func (m *MockRepo) GetAccountByID(id int) (*models.Account, error) {
 func (mr *MockRepoMockRecorder) GetAccountByID(id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountByID", reflect.TypeOf((*MockRepo)(nil).GetAccountByID), id)
-}
-
-// GetAccountLastCreated mocks base method.
-func (m *MockRepo) GetAccountLastCreated() (*models.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAccountLastCreated")
-	ret0, _ := ret[0].(*models.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAccountLastCreated indicates an expected call of GetAccountLastCreated.
-func (mr *MockRepoMockRecorder) GetAccountLastCreated() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountLastCreated", reflect.TypeOf((*MockRepo)(nil).GetAccountLastCreated))
 }
 
 // GetCustomerByCredentials mocks base method.

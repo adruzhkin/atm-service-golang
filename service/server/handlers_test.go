@@ -55,10 +55,7 @@ func TestSignupCustomer(t *testing.T) {
 		Account:   &accAfter,
 	}
 
-	lastAcc := models.Account{Number: "100000000098"}
-
 	repo := mocks.NewMockRepo(ctrl)
-	repo.EXPECT().GetAccountLastCreated().Return(&lastAcc, nil)
 	repo.EXPECT().CreateCustomer(gomock.Any()).DoAndReturn(func(cus *models.Customer) error {
 		assert.Equal(t, "Natasha", cus.FirstName)
 		assert.Equal(t, "Romanov", cus.LastName)

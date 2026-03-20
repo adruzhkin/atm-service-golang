@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -111,10 +110,3 @@ func (trb *TransactionRequestBody) ParseToAmountInCents() (int, error) {
 	}
 }
 
-func (trb *TransactionRequestBody) HasSufficientFunds(balance int, amountInCents int) bool {
-	if amountInCents >= 0 {
-		return true
-	}
-
-	return math.Abs(float64(amountInCents)) <= float64(balance)
-}

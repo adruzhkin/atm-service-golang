@@ -3,10 +3,12 @@ package server
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/adruzhkin/atm-service-golang/service/db"
 	"github.com/adruzhkin/atm-service-golang/service/jwt"
 	"github.com/adruzhkin/atm-service-golang/service/models"
 	"github.com/adruzhkin/atm-service-golang/service/utils"
@@ -35,19 +37,6 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 			return
 		}
 
-		// Generate new account number
-		lastAcc, err := s.DB.GetAccountLastCreated()
-		if err != nil {
-			switch err {
-			case sql.ErrNoRows:
-				break
-			default:
-				utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
-				return
-			}
-		}
-		newAccNo := models.GenerateAccountNo(lastAcc.Number)
-
 		// Hash PIN.
 		pinHash, err := models.GeneratePINHash(cusReq.PINNumber)
 		if err != nil {
@@ -61,7 +50,7 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 			LastName:  cusReq.LastName,
 			Email:     cusReq.Email,
 			PINHash:   pinHash,
-			Account:   &models.Account{Number: newAccNo},
+			Account:   &models.Account{},
 		}
 		err = s.DB.CreateCustomer(&cus)
 		if err != nil {
@@ -212,33 +201,24 @@ func (s *Server) PostTransaction() http.HandlerFunc {
 			return
 		}
 
-		// Query db for balance.
-		balance, err := s.DB.GetTransactionsBalanceByAccountID(id)
-		if err != nil {
-			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		// Verify account funds
+		// Parse amount.
 		amountInCents, err := trbReq.ParseToAmountInCents()
 		if err != nil {
 			utils.RespondWithError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		hasFunds := trbReq.HasSufficientFunds(balance, amountInCents)
 
-		if !hasFunds {
-			utils.RespondWithError(w, http.StatusBadRequest, "non-sufficient funds")
-			return
-		}
-
-		// Save in db.
+		// Save in db (atomic balance check + insert).
 		tx := models.Transaction{
 			AmountInCents: amountInCents,
 			AccountID:     trbReq.AccountID,
 		}
-		err = s.DB.CreateTransaction(&tx)
+		err = s.DB.CreateTransactionWithBalanceCheck(&tx)
 		if err != nil {
+			if errors.Is(err, db.ErrInsufficientFunds) {
+				utils.RespondWithError(w, http.StatusBadRequest, err.Error())
+				return
+			}
 			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}

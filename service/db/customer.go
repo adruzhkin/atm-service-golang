@@ -49,14 +49,18 @@ func (p *Postgres) CreateCustomer(cus *models.Customer) error {
 		return errors.New("failed to create new customer")
 	}
 
-	acc := cus.Account
-	_, err = tx.Exec("INSERT INTO accounts(number) VALUES($1)", acc.Number)
-	if err != nil {
+	// Lock last account row and generate next account number.
+	var lastAccNo string
+	err = tx.QueryRow("SELECT number FROM accounts ORDER BY number DESC LIMIT 1 FOR UPDATE").Scan(&lastAccNo)
+	if err != nil && err != sql.ErrNoRows {
 		_ = tx.Rollback()
 		return errors.New("failed to create account for new customer")
 	}
 
-	err = tx.QueryRow("SELECT id FROM accounts WHERE number=$1", acc.Number).Scan(&acc.ID)
+	acc := cus.Account
+	acc.Number = models.GenerateAccountNo(lastAccNo)
+
+	err = tx.QueryRow("INSERT INTO accounts(number) VALUES($1) RETURNING id", acc.Number).Scan(&acc.ID)
 	if err != nil {
 		_ = tx.Rollback()
 		return errors.New("failed to create account for new customer")

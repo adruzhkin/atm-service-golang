@@ -12,9 +12,9 @@ type Repo interface {
 	CreateCustomer(c *models.Customer) error
 
 	GetAccountByID(id int) (*models.Account, error)
-	GetAccountLastCreated() (*models.Account, error)
 
 	GetTransactionsByAccountID(id int) ([]models.Transaction, error)
 	GetTransactionsBalanceByAccountID(id int) (int, error)
 	CreateTransaction(tx *models.Transaction) error
+	CreateTransactionWithBalanceCheck(tx *models.Transaction) error
 }

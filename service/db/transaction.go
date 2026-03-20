@@ -3,8 +3,11 @@ package db
 import (
 	"database/sql"
 	"errors"
+
 	"github.com/adruzhkin/atm-service-golang/service/models"
 )
+
+var ErrInsufficientFunds = errors.New("non-sufficient funds")
 
 func (p *Postgres) GetTransactionsByAccountID(id int) ([]models.Transaction, error) {
 	rows, err := p.db.Query(
@@ -48,5 +51,40 @@ func (p *Postgres) CreateTransaction(tx *models.Transaction) error {
 	if err != nil {
 		return errors.New("failed to create new transaction")
 	}
+	return nil
+}
+
+func (p *Postgres) CreateTransactionWithBalanceCheck(tx *models.Transaction) error {
+	dbTx, err := p.db.Begin()
+	if err != nil {
+		return errors.New("failed to create new transaction")
+	}
+
+	var balance int
+	err = dbTx.QueryRow(
+		"SELECT coalesce(sum(amount_in_cents), 0) FROM transactions WHERE account_id=$1 FOR UPDATE",
+		tx.AccountID).Scan(&balance)
+	if err != nil {
+		_ = dbTx.Rollback()
+		return errors.New("failed to create new transaction")
+	}
+
+	if tx.AmountInCents < 0 && -tx.AmountInCents > balance {
+		_ = dbTx.Rollback()
+		return ErrInsufficientFunds
+	}
+
+	err = dbTx.QueryRow(
+		"INSERT INTO transactions(amount_in_cents, account_id) VALUES($1,$2) RETURNING id, created_at",
+		tx.AmountInCents, tx.AccountID).Scan(&tx.ID, &tx.CreatedAt)
+	if err != nil {
+		_ = dbTx.Rollback()
+		return errors.New("failed to create new transaction")
+	}
+
+	if err = dbTx.Commit(); err != nil {
+		return errors.New("failed to create new transaction")
+	}
+
 	return nil
 }
