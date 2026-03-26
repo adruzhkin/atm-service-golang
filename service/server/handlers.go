@@ -37,6 +37,12 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 			return
 		}
 
+		// Validate input.
+		if err := cusReq.Validate(); err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
 		// Hash PIN.
 		pinHash, err := models.GeneratePINHash(cusReq.PINNumber)
 		if err != nil {
@@ -54,6 +60,10 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 		}
 		err = s.DB.CreateCustomer(&cus)
 		if err != nil {
+			if db.IsDuplicateKeyError(err) {
+				utils.RespondWithError(w, http.StatusConflict, "email already registered")
+				return
+			}
 			slog.Error("create customer failed", "error", err)
 			utils.RespondWithError(w, http.StatusInternalServerError, "internal server error")
 			return
@@ -82,6 +92,12 @@ func (s *Server) LoginCustomer() http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&credentials)
 		if err != nil {
 			utils.RespondWithError(w, http.StatusBadRequest, "failed to parse customer credentials")
+			return
+		}
+
+		// Validate input.
+		if err := credentials.Validate(); err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -189,6 +205,12 @@ func (s *Server) PostTransaction() http.HandlerFunc {
 		if err != nil {
 			slog.Error("failed to decode transaction request", "error", err)
 			utils.RespondWithError(w, http.StatusBadRequest, "failed to parse transaction request body")
+			return
+		}
+
+		// Validate input.
+		if err := trbReq.Validate(); err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 

@@ -93,6 +93,19 @@ func (t *Transaction) OmitAccountID() {
 	t.AccountID = 0
 }
 
+func (trb *TransactionRequestBody) Validate() error {
+	if trb.Type == Undefined {
+		return errors.New("type must be 'deposit' or 'withdraw'")
+	}
+	if strings.TrimSpace(trb.Amount) == "" {
+		return errors.New("amount is required")
+	}
+	if trb.AccountID <= 0 {
+		return errors.New("account_id is required")
+	}
+	return nil
+}
+
 func (trb *TransactionRequestBody) ParseToAmountInCents() (int, error) {
 	if !amountRegex.MatchString(trb.Amount) {
 		return 0, errors.New("amount must be in format '0.00' (e.g. '10.50')")

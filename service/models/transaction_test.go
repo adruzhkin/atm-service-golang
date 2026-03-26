@@ -65,3 +65,30 @@ func TestParseToAmountInCents_UndefinedType(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "undefined transaction type")
 }
+
+func TestTransactionRequestBody_Validate_Valid(t *testing.T) {
+	trb := TransactionRequestBody{Type: Deposit, Amount: "10.00", AccountID: 1}
+	assert.NoError(t, trb.Validate())
+}
+
+func TestTransactionRequestBody_Validate_Errors(t *testing.T) {
+	tests := []struct {
+		name    string
+		trb     TransactionRequestBody
+		wantErr string
+	}{
+		{"undefined type", TransactionRequestBody{Type: Undefined, Amount: "10.00", AccountID: 1}, "type must be 'deposit' or 'withdraw'"},
+		{"empty amount", TransactionRequestBody{Type: Deposit, Amount: "", AccountID: 1}, "amount is required"},
+		{"whitespace amount", TransactionRequestBody{Type: Deposit, Amount: "   ", AccountID: 1}, "amount is required"},
+		{"zero account_id", TransactionRequestBody{Type: Deposit, Amount: "10.00", AccountID: 0}, "account_id is required"},
+		{"negative account_id", TransactionRequestBody{Type: Deposit, Amount: "10.00", AccountID: -1}, "account_id is required"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.trb.Validate()
+			assert.Error(t, err)
+			assert.Equal(t, tc.wantErr, err.Error())
+		})
+	}
+}
