@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS customers
     id         SERIAL,
     first_name VARCHAR(25),
     last_name  VARCHAR(25),
-    email      VARCHAR(25),
+    email      VARCHAR(254),
     pin_hash   VARCHAR(60),
     account_id INT,
     UNIQUE (email),
@@ -32,5 +32,7 @@ CREATE TABLE IF NOT EXISTS transactions
     PRIMARY KEY (id),
     FOREIGN KEY (account_id) REFERENCES accounts (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions (account_id);
 
 -- Seed

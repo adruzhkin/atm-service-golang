@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+var amountRegex = regexp.MustCompile(`^\d+\.\d{2}$`)
 
 type TransactionType int
 
@@ -91,8 +94,10 @@ func (t *Transaction) OmitAccountID() {
 }
 
 func (trb *TransactionRequestBody) ParseToAmountInCents() (int, error) {
-	trb.Amount = strings.ReplaceAll(trb.Amount, ".", "")
-	amountInCents, err := strconv.Atoi(trb.Amount)
+	if !amountRegex.MatchString(trb.Amount) {
+		return 0, errors.New("amount must be in format '0.00' (e.g. '10.50')")
+	}
+	amountInCents, err := strconv.Atoi(strings.Replace(trb.Amount, ".", "", 1))
 	if err != nil {
 		return 0, err
 	}
