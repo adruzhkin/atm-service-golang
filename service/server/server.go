@@ -3,8 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/adruzhkin/atm-service-golang/service/db"
@@ -30,16 +31,17 @@ func New(port *int) *Server {
 }
 
 func (s *Server) ShutdownGracefully(timeout *time.Duration) {
-	log.Printf("graceful shutdown with %v timeout\n", timeout)
+	slog.Info("graceful shutdown", "timeout", timeout)
 
 	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 	defer cancel()
 
 	if err := s.Shutdown(ctx); err != nil {
-		log.Fatalf("unexpected shuttdown: %s\n", err)
+		slog.Error("unexpected shutdown", "error", err)
+		os.Exit(1)
 	}
 
-	log.Println("server shutdown gracefully")
+	slog.Info("server shutdown gracefully")
 }
 
 func (s *Server) initRoutes(r *mux.Router) {

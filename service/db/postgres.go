@@ -2,7 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"log"
+	"log/slog"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -32,7 +32,7 @@ func (p *Postgres) Open() error {
 		return err
 	}
 
-	log.Println("connected to database")
+	slog.Info("connected to database")
 	p.db = pg
 
 	return nil

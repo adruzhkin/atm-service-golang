@@ -2,7 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 )
 
@@ -20,6 +20,6 @@ func RespondWithJSON(w http.ResponseWriter, statusCode int, payload interface{})
 
 	err := json.NewEncoder(w).Encode(payload)
 	if err != nil {
-		log.Printf("cannot format json: %v\n", err)
+		slog.Error("cannot format json", "error", err)
 	}
 }

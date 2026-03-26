@@ -2,7 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"errors"
+	"fmt"
 
 	"github.com/adruzhkin/atm-service-golang/service/models"
 )
@@ -15,7 +15,7 @@ func (p *Postgres) GetAccountByID(id int) (*models.Account, error) {
 		case sql.ErrNoRows:
 			return &models.Account{}, err
 		default:
-			return &models.Account{}, errors.New("failed to query existing account by id")
+			return &models.Account{}, fmt.Errorf("failed to query account by id: %w", err)
 		}
 	}
 	return &acc, nil

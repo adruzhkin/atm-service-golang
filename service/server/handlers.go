@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -54,7 +54,8 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 		}
 		err = s.DB.CreateCustomer(&cus)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			slog.Error("create customer failed", "error", err)
+			utils.RespondWithError(w, http.StatusInternalServerError, "internal server error")
 			return
 		}
 
@@ -137,7 +138,8 @@ func (s *Server) GetAccount() http.HandlerFunc {
 				utils.RespondWithError(w, http.StatusNotFound, "account not found")
 				return
 			default:
-				utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+				slog.Error("get account failed", "error", err, "account_id", id)
+				utils.RespondWithError(w, http.StatusInternalServerError, "internal server error")
 				return
 			}
 		}
@@ -149,7 +151,8 @@ func (s *Server) GetAccount() http.HandlerFunc {
 			case sql.ErrNoRows:
 				acc.Transactions = []models.Transaction{}
 			default:
-				utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+				slog.Error("get transactions failed", "error", err, "account_id", id)
+				utils.RespondWithError(w, http.StatusInternalServerError, "internal server error")
 				return
 			}
 		} else {
@@ -159,7 +162,8 @@ func (s *Server) GetAccount() http.HandlerFunc {
 		// Query db for balance.
 		balance, err := s.DB.GetTransactionsBalanceByAccountID(id)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			slog.Error("get balance failed", "error", err, "account_id", id)
+			utils.RespondWithError(w, http.StatusInternalServerError, "internal server error")
 			return
 		}
 		balanceTx := models.Transaction{AmountInCents: balance}
@@ -183,7 +187,7 @@ func (s *Server) PostTransaction() http.HandlerFunc {
 		trbReq := models.TransactionRequestBody{}
 		err := json.NewDecoder(r.Body).Decode(&trbReq)
 		if err != nil {
-			log.Println(err)
+			slog.Error("failed to decode transaction request", "error", err)
 			utils.RespondWithError(w, http.StatusBadRequest, "failed to parse transaction request body")
 			return
 		}
@@ -219,7 +223,8 @@ func (s *Server) PostTransaction() http.HandlerFunc {
 				utils.RespondWithError(w, http.StatusBadRequest, err.Error())
 				return
 			}
-			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			slog.Error("create transaction failed", "error", err)
+			utils.RespondWithError(w, http.StatusInternalServerError, "internal server error")
 			return
 		}
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,7 +32,7 @@ func main() {
 		time.Sleep(5 * time.Second)
 		err := s.DB.Open()
 		if err != nil {
-			log.Printf("cannot open db connection: %s\n", err)
+			slog.Error("cannot open db connection", "error", err)
 			continue
 		}
 
@@ -44,9 +44,10 @@ func main() {
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		log.Println("server is up and running")
+		slog.Info("server is up and running", "port", *port)
 		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("unexpected shuttdown: %s\n", err)
+			slog.Error("unexpected shutdown", "error", err)
+			os.Exit(1)
 		}
 	}()
 

@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/adruzhkin/atm-service-golang/service/models"
 )
@@ -17,7 +18,7 @@ func (p *Postgres) GetCustomerByEmail(email string) (*models.Customer, error) {
 		case sql.ErrNoRows:
 			return &models.Customer{}, err
 		default:
-			return &models.Customer{}, errors.New("failed to query existing customer by email address")
+			return &models.Customer{}, fmt.Errorf("failed to query customer by email: %w", err)
 		}
 	}
 
@@ -46,7 +47,7 @@ func (p *Postgres) GetCustomerByCredentials(crd *models.CustomerCredentials) (*m
 func (p *Postgres) CreateCustomer(cus *models.Customer) error {
 	tx, err := p.db.Begin()
 	if err != nil {
-		return errors.New("failed to create new customer")
+		return fmt.Errorf("failed to begin customer transaction: %w", err)
 	}
 
 	// Lock last account row and generate next account number.
@@ -54,7 +55,7 @@ func (p *Postgres) CreateCustomer(cus *models.Customer) error {
 	err = tx.QueryRow("SELECT number FROM accounts ORDER BY number DESC LIMIT 1 FOR UPDATE").Scan(&lastAccNo)
 	if err != nil && err != sql.ErrNoRows {
 		_ = tx.Rollback()
-		return errors.New("failed to create account for new customer")
+		return fmt.Errorf("failed to lock accounts for number generation: %w", err)
 	}
 
 	acc := cus.Account
@@ -63,25 +64,20 @@ func (p *Postgres) CreateCustomer(cus *models.Customer) error {
 	err = tx.QueryRow("INSERT INTO accounts(number) VALUES($1) RETURNING id", acc.Number).Scan(&acc.ID)
 	if err != nil {
 		_ = tx.Rollback()
-		return errors.New("failed to create account for new customer")
+		return fmt.Errorf("failed to insert account: %w", err)
 	}
 
-	_, err = tx.Exec("INSERT INTO customers(first_name, last_name, email, pin_hash, account_id) VALUES($1,$2,$3,$4,$5)",
-		cus.FirstName, cus.LastName, cus.Email, cus.PINHash, acc.ID)
+	err = tx.QueryRow("INSERT INTO customers(first_name, last_name, email, pin_hash, account_id) VALUES($1,$2,$3,$4,$5) RETURNING id",
+		cus.FirstName, cus.LastName, cus.Email, cus.PINHash, acc.ID).Scan(&cus.ID)
 	if err != nil {
 		_ = tx.Rollback()
-		return errors.New("failed to create new customer")
+		return fmt.Errorf("failed to insert customer: %w", err)
 	}
-
-	err = tx.QueryRow("SELECT id, account_id FROM customers WHERE account_id=$1", acc.ID).Scan(&cus.ID, &cus.AccountID)
-	if err != nil {
-		_ = tx.Rollback()
-		return errors.New("failed to create new customer")
-	}
+	cus.AccountID = acc.ID
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.New("failed to create new customer")
+		return fmt.Errorf("failed to commit customer creation: %w", err)
 	}
 
 	return nil
