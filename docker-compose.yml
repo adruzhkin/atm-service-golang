@@ -20,7 +20,7 @@ services:
     build: service
     container_name: atm_server
     ports:
-      - "8080:5000"
+      - "8080:8080"
     environment:
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}

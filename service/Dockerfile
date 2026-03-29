@@ -8,7 +8,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o main cmd/main.go
 
 FROM alpine:3.21
-EXPOSE 5000
+EXPOSE 8080
 
 COPY --from=builder /build/main /main
 

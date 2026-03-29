@@ -1,78 +1,93 @@
-# ATM Service Rest API with Postgres and JWT Example
+# ATM Service REST API
+
+A REST API in Go simulating basic ATM operations (signup, login, deposit, withdraw, balance check). Uses PostgreSQL for storage, JWT for authentication, and runs via Docker Compose.
 
 ### Build, Run and Test
 
 - Clone the project and go to the project root directory `atm-service-golang`
-- You can create your own `.env` file with required variables or use `.env_sample`
-- If you use `.env_sample`, make sure to rename it to `.env` before you run docker compose
-- Run docker compose command to start backend server and Postgres DB:
+- Create your own `.env` file from the sample:
     ```bash
-    docker-compose up --build
+    cp .env_sample .env
     ```
-- Tests implemented partially for server handlers using go-mock. To run all tests:
+- Run docker compose to start the backend server and Postgres DB:
     ```bash
-    go test ./server
+    docker compose up --build
     ```
-### API Endpoints
-#### Service exposes five endpoints
+- The API is available at `http://localhost:8080/api/v1`
+- To run tests:
+    ```bash
+    cd service && go test ./server/...
+    ```
 
-1. Request to check app status:
+### API Endpoints
+
+#### 1. Health check
 ```bash
-curl http://localhost:5000/api/v1/health
+curl http://localhost:8080/api/v1/health
 ```
 Response:
 ```json
 {"status":"service is up and running"}
 ```
-<br>
 
-2. Request to signup new customer:
+#### 2. Sign up a new customer
 ```bash
-curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "pin_number": "1234"}' http://localhost:5000/api/v1/auth/signup
+curl -s -X POST -H 'Content-Type: application/json' \
+  --data '{"first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "pin_number": "1234"}' \
+  http://localhost:8080/api/v1/auth/signup
+```
+Response includes an access token (default 15min expiry) and a refresh token (default 7 days):
+```json
+{"jwt":"<access_token>","refresh_token":"<refresh_token>","customer":{"id":1,"first_name":"Natasha","last_name":"Romanov","email":"natasha@gmail.com","account":{"id":1,"number":"000000000001"}}}
+```
+Save the access token for authenticated requests:
+```bash
+TOKEN=<access_token>
+```
+
+#### 3. Log in an existing customer
+```bash
+curl -s -X POST -H 'Content-Type: application/json' \
+  --data '{"pin_number": "1234", "email": "natasha@gmail.com"}' \
+  http://localhost:8080/api/v1/auth/login
+```
+With jq, save the token directly:
+```bash
+TOKEN=$(curl -s -X POST -H 'Content-Type: application/json' \
+  --data '{"pin_number": "1234", "email": "natasha@gmail.com"}' \
+  http://localhost:8080/api/v1/auth/login | jq -r '.jwt')
+```
+
+#### 4. Refresh tokens
+When the access token expires, use the refresh token to get a new pair:
+```bash
+curl -s -X POST -H 'Content-Type: application/json' \
+  --data '{"refresh_token": "<refresh_token>"}' \
+  http://localhost:8080/api/v1/auth/refresh
 ```
 Response:
 ```json
-{"jwt":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXMiOjEsImFjYyI6MSwiZXhwIjoxNjUwMzUwMjEyfQ.gUBuS-j7VoDp9CdSc_F3f2VfhTXneNKS4WkPHE-f0ow","customer":{"id":1,"first_name":"Natasha","last_name":"Romanov","email":"natasha@gmail.com","account":{"id":1,"number":"000000000001"}}}
+{"jwt":"<new_access_token>","refresh_token":"<new_refresh_token>"}
 ```
-It returns JWT token that is valid for 2 minutes for testing purposes.
-It is recommended to copy the token to env variable:
-```text
-TOKEN=eyJhbGciOiJIUzI1NiIsI...
-```
-<br>
 
-3. Request to login existing user:
+#### 5. View account info (balance, transactions)
 ```bash
-curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"pin_number": "1234", "email": "natasha@gmail.com"}' http://localhost:5000/api/v1/auth/login
-```
-Response:
-```json
-{"jwt":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXMiOjEsImFjYyI6MSwiZXhwIjoxNjUwMzUxNDE4fQ._CNJIng6uwVgYoZjjVgddEHnSW4ZyI1Md-CHu4H5IK8","customer":{"id":1,"first_name":"Natasha","last_name":"Romanov","email":"natasha@gmail.com","account":{"id":1,"number":"000000000001"}}}
-```
-If jq tool is installed, you can save token to env variable:
-```bash
-TOKEN=$(curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' --data '{"pin_number": "1234", "email": "natasha@gmail.com"}' http://localhost:5000/api/v1/auth/login | jq -r '.jwt')
-```
-If token has expired, you can login one more time to refresh it.
-
-<br>
-
-4. Request to view account info, i.e. number, balance, transactions history:
-```bash
-curl -w "\n" -H 'Accept: application/json' -H "Authorization: Bearer ${TOKEN}" http://localhost:5000/api/v1/accounts/1
+curl -H "Authorization: Bearer ${TOKEN}" http://localhost:8080/api/v1/accounts/1
 ```
 Response:
 ```json
 {"id":1,"number":"000000000001","balance":"0.00"}
 ```
 
-<br>
-
-5. Request to deposit or withdraw money from the account. API supports two types of transactions, 'deposit' and 'withdraw':
+#### 6. Deposit or withdraw money
+Supports `deposit` and `withdraw` transaction types:
 ```bash
-curl -w "\n" -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H "Authorization: Bearer ${TOKEN}" --data '{"type": "deposit", "amount": "50.00", "account_id": 1}' http://localhost:5000/api/v1/transactions
+curl -s -X POST -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer ${TOKEN}" \
+  --data '{"type": "deposit", "amount": "50.00", "account_id": 1}' \
+  http://localhost:8080/api/v1/transactions
 ```
 Response:
 ```json
-{"id":"5b623eec-dc19-4849-a7ae-23251f69aeb2","amount":"50.00","created_at":"2022-04-19T07:01:15.685864Z","account_id":1}
+{"id":"5b623eec-dc19-4849-a7ae-23251f69aeb2","amount":"50.00","created_at":"2022-04-19T07:01:15.685864Z"}
 ```

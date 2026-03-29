@@ -18,7 +18,7 @@ var (
 	jwtSecret        = os.Getenv("JWT_SECRET")
 	jwtExpiry        = os.Getenv("JWT_EXPIRY")
 	jwtRefreshExpiry = os.Getenv("JWT_REFRESH_EXPIRY")
-	port             = flag.Int("port", 5000, "http port to listen on")
+	port             = flag.Int("port", 8080, "http port to listen on")
 	timeout          = flag.Duration("timeout", 5*time.Second, "timeout for graceful shutdown")
 )
 
