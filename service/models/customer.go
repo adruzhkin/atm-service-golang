@@ -46,8 +46,14 @@ type CustomerCredentials struct {
 }
 
 type CustomerVerified struct {
-	JWT      string    `json:"jwt"`
-	Customer *Customer `json:"customer"`
+	JWT          string    `json:"jwt"`
+	RefreshToken string    `json:"refresh_token"`
+	Customer     *Customer `json:"customer"`
+}
+
+type TokenPair struct {
+	JWT          string `json:"jwt"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func (c *Customer) OmitValues() {

@@ -7,10 +7,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/adruzhkin/atm-service-golang/service/jwt"
 	"github.com/adruzhkin/atm-service-golang/service/mocks"
 	"github.com/adruzhkin/atm-service-golang/service/models"
-	"go.uber.org/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestCheckHealth(t *testing.T) {
@@ -65,13 +66,13 @@ func TestSignupCustomer(t *testing.T) {
 		return nil
 	})
 
-	jwt := mocks.NewMockJWT(ctrl)
-	jwt.EXPECT().Generate(7, 0).Return("token", nil)
+	jwtMock := mocks.NewMockJWT(ctrl)
+	jwtMock.EXPECT().GenerateTokenPair(7, 0).Return("access_token", "refresh_token", nil)
 
 	port := 5000
 	server := New(&port)
 	server.DB = repo
-	server.JWT = jwt
+	server.JWT = jwtMock
 
 	reqBody := `{"first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "pin_number": "1234", "account_number": "100000000099"}`
 	reader := strings.NewReader(reqBody)
@@ -83,7 +84,7 @@ func TestSignupCustomer(t *testing.T) {
 
 	res := rr.Result()
 	resBody, _ := ioutil.ReadAll(res.Body)
-	expBody := `{"jwt": "token", "customer": {"id": 7, "first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "account": {"id": 0, "number": "100000000099"}}}`
+	expBody := `{"jwt": "access_token", "refresh_token": "refresh_token", "customer": {"id": 7, "first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "account": {"id": 0, "number": "100000000099"}}}`
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.JSONEq(t, expBody, string(resBody))
@@ -113,13 +114,13 @@ func TestLoginCustomer(t *testing.T) {
 	repo := mocks.NewMockRepo(ctrl)
 	repo.EXPECT().GetCustomerByCredentials(&credentials).Return(&cus, nil)
 
-	jwt := mocks.NewMockJWT(ctrl)
-	jwt.EXPECT().Generate(7, 0).Return("token", nil)
+	jwtMock := mocks.NewMockJWT(ctrl)
+	jwtMock.EXPECT().GenerateTokenPair(7, 0).Return("access_token", "refresh_token", nil)
 
 	port := 5000
 	server := New(&port)
 	server.DB = repo
-	server.JWT = jwt
+	server.JWT = jwtMock
 
 	reqBody := `{"pin_number": "1234", "email": "natasha@gmail.com"}`
 	reader := strings.NewReader(reqBody)
@@ -131,7 +132,39 @@ func TestLoginCustomer(t *testing.T) {
 
 	res := rr.Result()
 	resBody, _ := ioutil.ReadAll(res.Body)
-	expBody := `{"jwt": "token", "customer": {"id": 7, "first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "account": {"id": 0, "number": "100000000099"}}}`
+	expBody := `{"jwt": "access_token", "refresh_token": "refresh_token", "customer": {"id": 7, "first_name": "Natasha", "last_name": "Romanov", "email": "natasha@gmail.com", "account": {"id": 0, "number": "100000000099"}}}`
+
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.JSONEq(t, expBody, string(resBody))
+}
+
+func TestRefreshToken(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	jwtMock := mocks.NewMockJWT(ctrl)
+	jwtMock.EXPECT().VerifyRefreshToken("old_refresh").Return(&jwt.Claims{
+		CustomerID: 7,
+		AccountID:  3,
+		TokenType:  "refresh",
+	}, nil)
+	jwtMock.EXPECT().GenerateTokenPair(7, 3).Return("new_access", "new_refresh", nil)
+
+	port := 5000
+	server := New(&port)
+	server.JWT = jwtMock
+
+	reqBody := `{"refresh_token": "old_refresh"}`
+	reader := strings.NewReader(reqBody)
+	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", reader)
+	rr := httptest.NewRecorder()
+
+	handler := server.RefreshToken()
+	handler.ServeHTTP(rr, req)
+
+	res := rr.Result()
+	resBody, _ := ioutil.ReadAll(res.Body)
+	expBody := `{"jwt": "new_access", "refresh_token": "new_refresh"}`
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.JSONEq(t, expBody, string(resBody))

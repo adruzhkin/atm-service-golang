@@ -19,7 +19,7 @@ func (s *Server) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		token := bearerToken[1]
-		claims, err := s.JWT.Verify(token)
+		claims, err := s.JWT.VerifyAccessToken(token)
 		if err != nil {
 			utils.RespondWithError(w, http.StatusUnauthorized, err.Error())
 			return

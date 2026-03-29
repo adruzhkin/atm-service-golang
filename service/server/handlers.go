@@ -69,7 +69,7 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 			return
 		}
 
-		token, err := s.JWT.Generate(cus.ID, cus.AccountID)
+		accessToken, refreshToken, err := s.JWT.GenerateTokenPair(cus.ID, cus.AccountID)
 		if err != nil {
 			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
 			return
@@ -77,8 +77,9 @@ func (s *Server) SignupCustomer() http.HandlerFunc {
 
 		cus.OmitValues()
 		cusVerified := models.CustomerVerified{
-			JWT:      token,
-			Customer: &cus,
+			JWT:          accessToken,
+			RefreshToken: refreshToken,
+			Customer:     &cus,
 		}
 
 		utils.RespondWithJSON(w, http.StatusOK, cusVerified)
@@ -108,15 +109,17 @@ func (s *Server) LoginCustomer() http.HandlerFunc {
 			return
 		}
 
-		token, err := s.JWT.Generate(cus.ID, cus.AccountID)
+		accessToken, refreshToken, err := s.JWT.GenerateTokenPair(cus.ID, cus.AccountID)
 		if err != nil {
 			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
 		}
 
 		cus.OmitValues()
 		cusVerified := models.CustomerVerified{
-			JWT:      token,
-			Customer: cus,
+			JWT:          accessToken,
+			RefreshToken: refreshToken,
+			Customer:     cus,
 		}
 
 		utils.RespondWithJSON(w, http.StatusOK, cusVerified)
@@ -254,5 +257,41 @@ func (s *Server) PostTransaction() http.HandlerFunc {
 		tx.OmitAmountInCents()
 
 		utils.RespondWithJSON(w, http.StatusOK, tx)
+	}
+}
+
+func (s *Server) RefreshToken() http.HandlerFunc {
+	type refreshRequest struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req refreshRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "failed to parse refresh token request")
+			return
+		}
+
+		if req.RefreshToken == "" {
+			utils.RespondWithError(w, http.StatusBadRequest, "refresh_token is required")
+			return
+		}
+
+		claims, err := s.JWT.VerifyRefreshToken(req.RefreshToken)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusUnauthorized, "invalid or expired refresh token")
+			return
+		}
+
+		accessToken, refreshToken, err := s.JWT.GenerateTokenPair(claims.CustomerID, claims.AccountID)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		utils.RespondWithJSON(w, http.StatusOK, models.TokenPair{
+			JWT:          accessToken,
+			RefreshToken: refreshToken,
+		})
 	}
 }

@@ -61,9 +61,16 @@ func (p *Postgres) CreateTransactionWithBalanceCheck(tx *models.Transaction) err
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
+	// Lock the account row to serialize concurrent transactions.
+	_, err = dbTx.Exec("SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", tx.AccountID)
+	if err != nil {
+		_ = dbTx.Rollback()
+		return fmt.Errorf("failed to lock account: %w", err)
+	}
+
 	var balance int
 	err = dbTx.QueryRow(
-		"SELECT coalesce(sum(amount_in_cents), 0) FROM transactions WHERE account_id=$1 FOR UPDATE",
+		"SELECT coalesce(sum(amount_in_cents), 0) FROM transactions WHERE account_id=$1",
 		tx.AccountID).Scan(&balance)
 	if err != nil {
 		_ = dbTx.Rollback()

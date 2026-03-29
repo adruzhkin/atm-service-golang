@@ -40,32 +40,48 @@ func (m *MockJWT) EXPECT() *MockJWTMockRecorder {
 	return m.recorder
 }
 
-// Generate mocks base method.
-func (m *MockJWT) Generate(cus, acc int) (string, error) {
+// GenerateTokenPair mocks base method.
+func (m *MockJWT) GenerateTokenPair(cus, acc int) (string, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Generate", cus, acc)
+	ret := m.ctrl.Call(m, "GenerateTokenPair", cus, acc)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
-// Generate indicates an expected call of Generate.
-func (mr *MockJWTMockRecorder) Generate(cus, acc any) *gomock.Call {
+// GenerateTokenPair indicates an expected call of GenerateTokenPair.
+func (mr *MockJWTMockRecorder) GenerateTokenPair(cus, acc any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*MockJWT)(nil).Generate), cus, acc)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateTokenPair", reflect.TypeOf((*MockJWT)(nil).GenerateTokenPair), cus, acc)
 }
 
-// Verify mocks base method.
-func (m *MockJWT) Verify(strToken string) (*jwt.Claims, error) {
+// VerifyAccessToken mocks base method.
+func (m *MockJWT) VerifyAccessToken(strToken string) (*jwt.Claims, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Verify", strToken)
+	ret := m.ctrl.Call(m, "VerifyAccessToken", strToken)
 	ret0, _ := ret[0].(*jwt.Claims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Verify indicates an expected call of Verify.
-func (mr *MockJWTMockRecorder) Verify(strToken any) *gomock.Call {
+// VerifyAccessToken indicates an expected call of VerifyAccessToken.
+func (mr *MockJWTMockRecorder) VerifyAccessToken(strToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockJWT)(nil).Verify), strToken)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyAccessToken", reflect.TypeOf((*MockJWT)(nil).VerifyAccessToken), strToken)
+}
+
+// VerifyRefreshToken mocks base method.
+func (m *MockJWT) VerifyRefreshToken(strToken string) (*jwt.Claims, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyRefreshToken", strToken)
+	ret0, _ := ret[0].(*jwt.Claims)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VerifyRefreshToken indicates an expected call of VerifyRefreshToken.
+func (mr *MockJWTMockRecorder) VerifyRefreshToken(strToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyRefreshToken", reflect.TypeOf((*MockJWT)(nil).VerifyRefreshToken), strToken)
 }

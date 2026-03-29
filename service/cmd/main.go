@@ -15,16 +15,25 @@ import (
 )
 
 var (
-	jwtSecret = os.Getenv("JWT_SECRET")
-	port      = flag.Int("port", 5000, "http port to listen on")
-	timeout   = flag.Duration("timeout", 5*time.Second, "timeout for graceful shutdown")
+	jwtSecret        = os.Getenv("JWT_SECRET")
+	jwtExpiry        = os.Getenv("JWT_EXPIRY")
+	jwtRefreshExpiry = os.Getenv("JWT_REFRESH_EXPIRY")
+	port             = flag.Int("port", 5000, "http port to listen on")
+	timeout          = flag.Duration("timeout", 5*time.Second, "timeout for graceful shutdown")
 )
 
 func main() {
 	flag.Parse()
 
+	accessExpiry := parseDurationOrDefault(jwtExpiry, 15*time.Minute)
+	refreshExpiry := parseDurationOrDefault(jwtRefreshExpiry, 168*time.Hour)
+
 	s := server.New(port)
-	s.JWT = &jwt.Token{Secret: jwtSecret}
+	s.JWT = &jwt.Token{
+		Secret:             jwtSecret,
+		AccessTokenExpiry:  accessExpiry,
+		RefreshTokenExpiry: refreshExpiry,
+	}
 	s.DB = &db.Postgres{}
 
 	for i := 0; i < 3; i++ {
@@ -53,4 +62,16 @@ func main() {
 
 	<-stopCh
 	s.ShutdownGracefully(timeout)
+}
+
+func parseDurationOrDefault(val string, fallback time.Duration) time.Duration {
+	if val == "" {
+		return fallback
+	}
+	d, err := time.ParseDuration(val)
+	if err != nil {
+		slog.Warn("invalid duration, using default", "value", val, "default", fallback)
+		return fallback
+	}
+	return d
 }

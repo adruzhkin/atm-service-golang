@@ -48,6 +48,7 @@ func (s *Server) initRoutes(r *mux.Router) {
 	r.HandleFunc("/health", s.CheckHealth()).Methods(http.MethodGet)
 	r.HandleFunc("/auth/signup", s.SignupCustomer()).Methods(http.MethodPost)
 	r.HandleFunc("/auth/login", s.LoginCustomer()).Methods(http.MethodPost)
+	r.HandleFunc("/auth/refresh", s.RefreshToken()).Methods(http.MethodPost)
 
 	r.HandleFunc("/accounts/{id:[0-9]+}", s.Authenticate(s.GetAccount())).Methods(http.MethodGet)
 	r.HandleFunc("/transactions", s.Authenticate(s.PostTransaction())).Methods(http.MethodPost)

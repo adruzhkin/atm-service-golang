@@ -1,6 +1,7 @@
 package jwt
 
 type JWT interface {
-	Generate(cus int, acc int) (string, error)
-	Verify(strToken string) (*Claims, error)
+	GenerateTokenPair(cus int, acc int) (string, string, error)
+	VerifyAccessToken(strToken string) (*Claims, error)
+	VerifyRefreshToken(strToken string) (*Claims, error)
 }
