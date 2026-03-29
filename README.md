@@ -27,7 +27,7 @@ curl http://localhost:8080/api/v1/health
 ```
 Response:
 ```json
-{"status":"service is up and running"}
+{"status":"ok"}
 ```
 
 #### 2. Sign up a new customer

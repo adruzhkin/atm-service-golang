@@ -23,7 +23,7 @@ func (s *Server) CheckHealth() http.HandlerFunc {
 			return
 		}
 
-		utils.RespondWithStatus(w, http.StatusOK, "service is up and running")
+		utils.RespondWithStatus(w, http.StatusOK, "ok")
 	}
 }
 
